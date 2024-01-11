@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Netherlands from '../components/Netherlands.astro';
+---
+
+<Layout title="Welcome to Astro.">
+	<div class="container mx-auto flex flex-col gap-4 font-serif">
+		<span class="flex justify-end items-end gap-2">
+			My name is 
+			<a id="me" href="https://linkedin.com/in/nora-rozenboom-154860232" target="_blank" class="group flex items-start">
+				<strong class="relative text-5xl">
+					<span class="absolute inset-x-0 text-center group-hover:block hidden">
+						<p class="">ノラ ロゼンボオム</p>
+						<p class="absolute top-0 inset-x-0 opacity-20 shaky">ノラ ロゼンボオム</p>
+					</span>
+					<p class="block group-hover:opacity-0">Nora Rozenboom</p>
+				</strong>
+				<!-- change to lindedin logo -->
+				<b class="h-7 aspect-square flex justify-center group-hover:border rounded-full group-hover:bg-white text-white group-hover:text-[#13151a]">in</b> 
+			</a>
+		</span>
+		<span class="flex flex-col">
+			<b class="text-xl">Full</b>
+			<b class="text-6xl">Stack</b>
+			<b class="text-6xl">Developer</b>
+		</span>
+		<span class="grid grid-cols-3">
+			<div class="relative col-start-2 col-span-2">
+				<span class="absolute inset-0 flex justify-center items-center">
+					<span class="flex flex-col">
+						<p>Based in</p> 
+						<b class="text-3xl">The Netherlands</b>
+					</span>
+				</span>
+				<Netherlands className='text-white' fill='#13151a'></Netherlands>
+			</div>
+		</span>
+	</div>
+	<!-- <div class="bg-pink-100">
+		about me
+	</div> -->
+</Layout>

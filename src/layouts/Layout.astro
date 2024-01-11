@@ -1,0 +1,135 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Astro description" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<span class="moon"></span>
+		<span class="grain"></span>
+		<main class="absolute inset-0">
+			<nav class="relative z-10 h-24 text-white">
+				<div class="fixed h-24 w-full">
+					<span class="h-full container mx-auto flex justify-between items-center">
+						<span class="w-48 font-serif uppercase">
+							DagashiHime
+						</span>
+						<span class="w-48 flex justify-end">
+							LinkedIn
+						</span>
+					</span>
+				</div>
+			</nav>
+			<slot />
+		</main>
+	</body>
+</html>
+<style is:global>
+	html {
+		font-family: system-ui, sans-serif;
+		color: white;
+		background: #13151a;
+	}
+	body {
+		background-color: #111111;
+		margin: 0;
+		overflow-x: hidden;
+	}
+
+	.grain {
+		position: fixed;
+		top: -50%;
+		left: -50%;
+		right: -50%;
+		bottom: -50%;
+		width: 200%;
+		height: 200vh;
+		background: transparent url('assets/noise-transparent.png') repeat 0 0;
+		background-repeat: repeat;
+		animation: grain-animation .2s infinite;
+		opacity: .6;
+		visibility: visible;
+	}
+
+	@keyframes grain-animation {
+		0% { transform: translate(0,0) }
+		10% { transform: translate(-5%,-5%) }
+		20% { transform: translate(-10%,5%) }
+		30% { transform: translate(5%,-10%) }
+		40% { transform: translate(-5%,15%) }
+		50% { transform: translate(-10%,5%) }
+		60% { transform: translate(15%,0) }
+		70% { transform: translate(0,10%) }
+		80% { transform: translate(-15%,0) }
+		90% { transform: translate(10%,5%) }
+		100% { transform: translate(5%,0) }
+	}
+
+	.shaky {
+		animation: shaky-animation .6s infinite;
+	}
+
+	@keyframes shaky-animation {
+		0% { transform: translate(0,0) }
+		10% { transform: translate(-2%,8%) }
+		30% { transform: translate(0,0) }
+		50% { transform: translate(2%,5%) }
+		100% { transform: translate(0,0);}
+	}
+
+	.moon {
+		position: absolute;
+		left: 38vw;
+		top: 38vh;
+		background-color: gray;
+		border-radius: 100%;
+		width: 8rem;
+		aspect-ratio: 1/1;
+	}
+</style>
+<script>
+	const moon = document.querySelector('.moon') as HTMLSpanElement
+
+	const loadMoonScene = ()=> {
+		const animate = moon.animate(      [
+			{ scale: 10 }
+		], {
+			duration: 5000,
+			iterations: 1
+		})
+		animate.addEventListener('finish', e=> {
+			moon.style.scale = '10'
+		})
+	}
+	const unloadMoonScene = ()=> {
+		const animate = moon.animate(      [
+			{ scale: 1 }
+		], {
+			duration: 5000,
+			iterations: 1
+		})
+		animate.addEventListener('finish', e=> {
+			moon.style.scale = '1'
+		})
+	}
+	
+	document.querySelectorAll('#me').forEach(anchor=> {
+		anchor.addEventListener('mouseenter',e=> {
+			loadMoonScene()
+		})
+		anchor.addEventListener('mouseleave',e=> {
+			unloadMoonScene()
+		})
+	})
+</script>
