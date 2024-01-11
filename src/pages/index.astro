@@ -1,13 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Netherlands from '../components/Netherlands.astro';
+const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout title="Nora Rozenboom - Full Stack Developer">
 	<div class="container mx-auto flex flex-col gap-4 font-serif">
 		<span class="flex justify-end items-end gap-2">
 			My name is 
-			<a id="me" href="https://linkedin.com/in/nora-rozenboom-154860232" target="_blank" class="group flex items-start">
+			<a id="me" href={PUBLIC_LINKEDIN_URL} target="_blank" class="group flex items-start">
 				<strong class="relative text-5xl">
 					<span class="absolute inset-x-0 text-center group-hover:block hidden">
 						<p class="">ノラ ロゼンボオム</p>

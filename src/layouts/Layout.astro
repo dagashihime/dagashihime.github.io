@@ -4,6 +4,7 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 ---
 
 <!doctype html>
@@ -16,18 +17,20 @@ const { title } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<span class="moon"></span>
+	<body>
+		<span class="moon"></span>
 		<span class="grain"></span>
-		<main class="absolute inset-0">
+		<span class="md:hidden block absolute inset-0 text-white"> mobile site not supported :(</span>
+		<main class="hidden md:block absolute inset-0">
 			<nav class="relative z-10 h-24 text-white">
 				<div class="fixed h-24 w-full">
 					<span class="h-full container mx-auto flex justify-between items-center">
 						<span class="w-48 font-serif uppercase">
 							DagashiHime
 						</span>
-						<span class="w-48 flex justify-end">
-							LinkedIn
-						</span>
+						<a href={PUBLIC_LINKEDIN_URL} target="_blank" class="w-48 flex justify-end font-serif font-bold">
+							in
+						</a>
 					</span>
 				</div>
 			</nav>
@@ -55,7 +58,7 @@ const { title } = Astro.props;
 		bottom: -50%;
 		width: 200%;
 		height: 200vh;
-		background: transparent url('assets/noise-transparent.png') repeat 0 0;
+		background: transparent url('/assets/noise-transparent.png') repeat 0 0;
 		background-repeat: repeat;
 		animation: grain-animation .2s infinite;
 		opacity: .6;
