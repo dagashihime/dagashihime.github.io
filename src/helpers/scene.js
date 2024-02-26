@@ -25,6 +25,7 @@ const setGlobe = ({ scene, loadingManager })=> {
         bumpMap: moonReliefTexture
     })
     const mesh = new THREE.Mesh(geometry, material)
+    mesh.name = 'moon'
     scene.add(mesh)
 
     return { mesh }
