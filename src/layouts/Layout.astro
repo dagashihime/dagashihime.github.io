@@ -18,7 +18,7 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 		<title>{title}</title>
 	</head>
 	<body>
-		<span class="moon"></span>
+		<!-- <span class="moon"></span>
 		<span class="grain"></span>
 		<span class="md:hidden block absolute inset-0 text-white"> mobile site not supported :(</span>
 		<main class="hidden md:block absolute inset-0">
@@ -35,10 +35,19 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 				</div>
 			</nav>
 			<slot />
-		</main>
+		</main> -->
 	</body>
 </html>
 <style is:global>
+	* {
+		margin: 0
+	}
+	canvas {
+		position: absolute;
+		top: 0;
+	}
+</style>
+<!-- <style is:global>
 	html {
 		font-family: system-ui, sans-serif;
 		color: white;
@@ -100,8 +109,8 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 		width: 8rem;
 		aspect-ratio: 1/1;
 	}
-</style>
-<script>
+</style> -->
+<!-- <script>
 	const moon = document.querySelector('.moon') as HTMLSpanElement
 
 	const loadMoonScene = ()=> {
@@ -135,4 +144,4 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 			unloadMoonScene()
 		})
 	})
-</script>
+</script> -->
