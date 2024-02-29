@@ -47,11 +47,13 @@ export default class Space {
             moon: boolean
             pillar?: THREE.Mesh 
         }
+        line?: THREE.Line
     } = {
         clicked: {
             moon: false,
             pillar: undefined
-        }
+        },
+        line: undefined
     }
 
     private meAnchor: HTMLAnchorElement
@@ -106,14 +108,23 @@ export default class Space {
 
     private loadCallback() {
         const loadingScreen = document.querySelector('#loading-screen') as HTMLDivElement
-        loadingScreen.classList.add('hidden')
+        const animation = loadingScreen.animate([
+            { opacity: 100 },
+            { opacity: 0 }
+        ], {
+            duration: 300
+        })
+
+        animation.addEventListener('finish', ()=> {
+            loadingScreen.classList.add('hidden')
+        })
     }
 
     private createMoon() {
         const { scene } = this
 
         const sphereSize = 50
-        const pillerSize = 1
+        const pillarSize = .5
 
         const moonTexture = this.textureLoader.load('../assets/MoonColorMap.png')
         const moonReliefTexture = this.textureLoader.load('../assets/MoonReliefMap.png')
@@ -121,37 +132,42 @@ export default class Space {
         const geometry = new THREE.SphereGeometry(50, 64, 64)
 
         const material = new THREE.MeshStandardMaterial({
-            // map: moonTexture,
-            // bumpMap: moonReliefTexture,
-            wireframe: true
+            // color: 'gray',
+            map: moonTexture,
+            bumpMap: moonReliefTexture,
+            // wireframe: true
         })
         const mesh = new THREE.Mesh(geometry, material)
         mesh.name = 'moon'
         scene.add(mesh);
 
+        scene.updateMatrixWorld();
+
+        const { PI } = Math
+
         const pillars = [
-            { phi: 1.07, theta: 0 },
-            { phi: 1.57, theta: 0 },
-            { phi: 1.285, theta: .57 },
-            { phi: 1.285, theta: -.57 },
-            { phi: 1.855, theta: .57 },
-            { phi: 1.855, theta: -.57 },
-            { phi: 2.07, theta: 0 },
+            { phi: PI * .35, theta: 0 },
+            { phi: PI * .5, theta: 0 },
+            { phi: PI * .425, theta: PI * .075 * 2 },
+            { phi: PI * .425, theta: -(PI * .075 * 2) },
+            { phi: PI * .575, theta: PI * .075 * 2 },
+            { phi: PI * .575, theta: -(PI * .075 * 2) },
+            { phi: PI * .65, theta: 0 },
         ].map(({ phi, theta })=> {
-            const geometryP = new THREE.CylinderGeometry(.5, .5, 1, 32, 32);
+            const geometryP = new THREE.CylinderGeometry(pillarSize, pillarSize, pillarSize, 32, 32);
             const materialP = new THREE.MeshBasicMaterial({
-                color: "red"
-                // color: "#e3e0cd", 
+                // color: "red"
+                color: "#e3e0cd", 
                 // wireframe: true
             });
             const meshP = new THREE.Mesh(geometryP, materialP);
-            meshP.position.setFromSphericalCoords(sphereSize + (pillerSize / 2), phi, theta);
+            meshP.position.setFromSphericalCoords(sphereSize + (pillarSize / 2), phi, theta);
             meshP.lookAt(mesh.position)
             meshP.rotateX(THREE.MathUtils.degToRad(90))
             meshP.visible = false
             meshP.name = 'pillar'
 
-            mesh.add(meshP);
+            scene.add(meshP);
 
             return meshP
         })
@@ -166,7 +182,6 @@ export default class Space {
 
         const materialOptions = {
             size: 2.0,
-            transparency: true,
             opacity: .7
         }
 
@@ -211,6 +226,31 @@ export default class Space {
         return { composer, renderPass, outlinePass, shaderPass, outputPass }
     }
 
+    private createLineAroundSphere({ vectors, sphericals }: { vectors?: { start: THREE.Vector3, end: THREE.Vector3 }, sphericals?: { start: THREE.Spherical, end: THREE.Spherical } }) {
+        // @ToDo: add error
+        const start = sphericals?.start ?? new THREE.Spherical().setFromVector3(vectors?.start!)
+        const end = sphericals?.end ?? new THREE.Spherical().setFromVector3(vectors?.end!)
+
+        const curvePoints = [];
+        const numPoints = 100;
+        for (let i = 0; i < numPoints; i++) {
+            const t = i / (numPoints - 1);
+            const phi = start.phi * (1 - t) + end.phi * t;
+            const theta = start.theta * (1 - t) + end.theta * t;
+            curvePoints.push(new THREE.Vector3().setFromSphericalCoords(50, phi, theta));
+        }
+
+        const curve = new THREE.CatmullRomCurve3(curvePoints)
+        const points = curve.getPoints(numPoints)
+
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
+        const line = new THREE.Line(lineGeometry, lineMaterial)
+        line.name = 'line'
+
+        return { line }
+    }
+
     private listeners() {
         const { meAnchor } = this
 
@@ -242,34 +282,24 @@ export default class Space {
             if(this.intersected && this.intersected.name === 'moon') {
                 this.states.clicked.moon = !this.states.clicked.moon
 
-                this.moon.children.forEach(child=> {
+                this.scene.children.forEach(child=> {
                     if(child.name === 'pillar') {
                         child.visible = !child.visible
                     }
                 })
+
+                if(this.states.line) {
+                    this.scene.remove(this.states.line)
+                    this.states.line = undefined
+                    this.states.clicked.pillar = undefined
+                }
             }
             if(this.intersected && this.intersected.name === 'pillar') {
                 if(this.states.clicked.pillar) {
-                    const v1 = this.states.clicked.pillar.position
-                    const v3 = this.intersected.position
+                    const start = this.states.clicked.pillar.position
+                    const end = this.intersected.position
 
-                    const s1 = new THREE.Spherical().setFromVector3(v1)
-                    const s3 = new THREE.Spherical().setFromVector3(v3)
-                    const s2 = new THREE.Spherical( (s1.radius + s3.radius) / 2 + 10, (s1.phi + s3.phi) / 2, (s1.theta + s3.theta) / 2 )
-
-                    const v2 = new THREE.Vector3().setFromSpherical(s2)
-
-                    const curve = new THREE.QuadraticBezierCurve3(
-                        v1,
-                        v2,
-                        v3
-                    )
-                    const points = curve.getPoints(128)
-            
-                    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
-                    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
-                    const line = new THREE.Line(lineGeometry, lineMaterial)
-                    line.name = 'line'
+                    const { line } = this.createLineAroundSphere({ vectors: { start, end }})
 
                     this.scene.add(line)
                 }
@@ -292,10 +322,11 @@ export default class Space {
             this.camera.position.y += (mouseY - camera.position.y) * .005
         }
 
+        // @ToDo: seperate raycasting
         this.raycaster.setFromCamera(pointer, camera);
 
         const intersects = raycaster.intersectObjects(scene.children, true).filter(i=> {
-            return !['line'].includes(i.object.name)
+            return !['line'].includes(i.object.name) && i.object.visible
         });
 
         if (intersects.length > 0) {
@@ -309,7 +340,23 @@ export default class Space {
             document.body.style.cursor = 'default';
         }
 
+        if(this.intersected && this.intersected.name === 'moon' && this.states.clicked.pillar) {
+            if(this.states.line) {
+                this.scene.remove(this.states.line)
+            }
 
+            const start = this.states.clicked.pillar.position
+            const end = intersects[0].point
+
+            const { line } = this.createLineAroundSphere({ vectors: { start, end }})
+
+            this.scene.add(line)
+
+            this.states.line = line
+        }
+        // @end
+
+        // @ToDo: better light control
         this.light.position.x += (mouseX - light.position.x) * .001
         this.light.position.y += (mouseY - light.position.y) * .001
 

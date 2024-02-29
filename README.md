@@ -1,5 +1,10 @@
-# dagashihime.github.io
+# current release
+- featureless >.>
 # todo
-- make MoonIcon svg that doesn't need to turn
+- fix three warning
+- cleanup eventlisteners
+- add reactjs?
+- setup better light control for space scene
+- add aboutme
 - add projects
 - add sound effects

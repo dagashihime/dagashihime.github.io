@@ -1,6 +1,4 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import MoonIcon from '../components/MoonIcon.astro';
 const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 ---
 
@@ -12,40 +10,40 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Nora Rozenboom - Full Stack Developer</title>
+		<title>Nora Rozenboom - Web Developer</title>
 	</head>
 	<body class="font-serif">
-		<div id="loading-screen" class="fixed inset-0 bg-black z-50 text-white flex flex-col justify-center items-center">
-			Delving deep...
+		<div id="loading-screen" class="fixed inset-0 bg-black z-50 text-white flex flex-col gap-4 justify-center items-center">
 			<span class="moonchild"></span>
+			<p>Delving deep...</p>
 		</div>
-		<!-- <div class="absolute inset-0 flex justify-center items-center">
-			<div class="relative opacity-30">
-				<MoonIcon className='w-96 -rotate-[40.5deg]' fill='rgba(255,255,255,1)' />
-				<MoonIcon className='absolute top-0 w-96 -rotate-[40.5deg] shaky' fill='rgba(255,255,255,.2)' />
-			</div>
-		</div> -->
 		<nav class="relative z-10 h-24 text-white">
 			<div class="fixed h-24 w-full">
 				<span class="h-full container mx-auto flex justify-between items-center">
 					<span class="w-48 font-serif uppercase">
 						DagashiHime
 					</span>
-					<!-- <a href={PUBLIC_LINKEDIN_URL} target="_blank" class="w-48 flex justify-end font-serif font-bold">
-						in
-					</a> -->
+					<span class="flex gap-8">
+						<!-- <a href="#???">???</a>
+						<a href="#about">About Me</a>
+						<a href="#projects">Projects</a> -->
+						<!-- <a href={PUBLIC_LINKEDIN_URL} target="_blank" class="w-48 flex justify-end font-serif font-bold">
+							in
+						</a> -->
+					</span>
+
 				</span>
 			</div>
 		</nav>
-		<main class="container mx-auto">
-			<div class="h-[calc(100vh-6rem)] flex flex-col gap-4 text-white">
-				<span class="flex justify-end items-end gap-2">
+		<main class="">
+			<div class="container mx-auto h-[calc(100vh-6rem)] flex flex-col gap-4 text-white">
+				<span class="p-4 md:p-0 flex flex-col md:flex-row md:justify-end md:items-end gap-2">
 					My name is 
 					<a id="me" href={PUBLIC_LINKEDIN_URL} target="_blank" class="group flex items-start">
 						<strong class="relative text-5xl">
 							<span class="absolute inset-x-0 text-center group-hover:block hidden whitespace-nowrap">
-								<p class="">ノラ ロゼンボオム</p>
-								<p class="absolute top-0 inset-x-0 opacity-20 shaky">ノラ ロゼンボオム</p>
+								<p class="">ダガシ ヒメ</p>
+								<p class="absolute top-0 inset-x-0 opacity-20 shaky">ダガシ ヒメ</p>
 							</span>
 							<p class="block group-hover:opacity-0">Nora Rozenboom</p>
 						</strong>
@@ -53,27 +51,48 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 						<b class="h-7 aspect-square flex justify-center group-hover:border rounded-full group-hover:bg-white text-white group-hover:text-[#13151a]">in</b> 
 					</a>
 				</span>
-				<span class="flex flex-col">
-					<b class="text-xl">Full</b>
-					<b class="text-6xl">Stack</b>
+				<span class="p-4 md:p-0 flex flex-col">
+					<b class="text-xl">Creative</b>
+					<b class="text-6xl">Web</b>
 					<b class="text-6xl">Developer</b>
 				</span>
 			</div>
 
-			<span class="">
-				more fun content
-			</span>
+			<!-- <div class="p-8 flex justify-center bg-purple-300">
+				<b class="text-3xl">Oooh! 2d space o.o</b>
+			</div>
+
+			<div id="about" class="container mx-auto h-screen flex flex-col gap-4 text-white">
+				here is where all the stuffies go
+			</div>
+
+			<div class="p-8 flex justify-center bg-pink-300">
+				<b class="text-3xl">I make stuff</b>
+			</div>
+
+			<div id="projects" class="container mx-auto h-screen flex flex-col gap-4 text-white">
+				good soup
+			</div> -->
 		</main>
 	</body>
 </html>
 
-<script src="../main.js"></script>`
+<script src="../main.js"></script>
 <style is:global>
 	* {
 		margin: 0;
 	}
-	main {
-		position: relative;
+	body::before {
+		content: '';
+		height: 100vh; 
+		aspect-ratio: 1/1;
+		position: fixed; 
+		inset: 0;
+		z-index: 99;
+		pointer-events: none;
+		background-image: url(/assets/noise.gif); 
+		background-size: 99px; 
+		opacity: .1; 
 	}
 	canvas {
 		position: absolute;
@@ -81,64 +100,22 @@ const { PUBLIC_LINKEDIN_URL } = import.meta.env;
 		z-index: -1;
 	}
 
-	.shaky {
-		animation: shaky-animation .6s infinite;
-	}
-
-	@keyframes shaky-animation {
-		0% { translate: 0 0; }
-		10% { translate: -2% 8% }
-		30% { translate: 0 0 }
-		50% { translate: 2% 5% }
-		100% { translate: 0 0;}
-	}
-	
 	.moonchild {
 		display: block;
 		height: 10rem;
 		aspect-ratio: 1/1;
 		border-radius: 99%;
 		background: radial-gradient(17rem at 50% 30%, transparent 20%, white 20.5%);
-		/* box-shadow: 0 .9rem 0 .7rem white; */
+	}
+
+	.shaky {
+		animation: shaky .6s infinite;
+	}
+	@keyframes shaky {
+		0% { translate: 0 0; }
+		10% { translate: -2% 8% }
+		30% { translate: 0 0 }
+		50% { translate: 2% 5% }
+		100% { translate: 0 0;}
 	}
 </style>
-
-
-<!-- 
-<Layout title="Nora Rozenboom - Full Stack Developer">
-	<div class="container mx-auto flex flex-col gap-4 font-serif">
-		<span class="flex justify-end items-end gap-2">
-			My name is 
-			<a id="me" href={PUBLIC_LINKEDIN_URL} target="_blank" class="group flex items-start">
-				<strong class="relative text-5xl">
-					<span class="absolute inset-x-0 text-center group-hover:block hidden">
-						<p class="">ノラ ロゼンボオム</p>
-						<p class="absolute top-0 inset-x-0 opacity-20 shaky">ノラ ロゼンボオム</p>
-					</span>
-					<p class="block group-hover:opacity-0">Nora Rozenboom</p>
-				</strong>
-				<!-- change to lindedin logo 
-				<b class="h-7 aspect-square flex justify-center group-hover:border rounded-full group-hover:bg-white text-white group-hover:text-[#13151a]">in</b> 
-			</a>
-		</span>
-		<span class="flex flex-col">
-			<b class="text-xl">Full</b>
-			<b class="text-6xl">Stack</b>
-			<b class="text-6xl">Developer</b>
-		</span>
-		<span class="grid grid-cols-3">
-			<div class="relative col-start-2 col-span-2">
-				<span class="absolute inset-0 flex justify-center items-center">
-					<span class="flex flex-col">
-						<p>Based in</p> 
-						<b class="text-3xl">The Netherlands</b>
-					</span>
-				</span>
-				<Netherlands className='text-white' fill='#13151a'></Netherlands>
-			</div>
-		</span>
-	</div>
-	<!-- <div class="bg-pink-100">
-		about me
-	</div> 
-</Layout>
