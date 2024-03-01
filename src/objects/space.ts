@@ -6,6 +6,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { getRandomXYZ } from '../helpers/math';
+import { createLineAroundSphere } from '../helpers/three';
 
 interface Plane {
     near: number
@@ -25,9 +26,7 @@ export default class Space {
     private fieldOfView: number
     private plane: Plane
     private pointer: THREE.Vector2
-    
-    private mouseX: number
-    private mouseY: number
+    private envpointer: THREE.Vector2
 
     private scene: THREE.Scene
     private renderer: THREE.WebGLRenderer
@@ -66,8 +65,7 @@ export default class Space {
         this.fieldOfView = fieldOfView
         this.plane = plane
         this.pointer = new THREE.Vector2(0, 0)
-        this.mouseX = 0
-        this.mouseY = 0
+        this.envpointer = new THREE.Vector2(0, 0)
 
         this.scene = new THREE.Scene()
         this.scene.fog = new THREE.FogExp2(0x000000, .0003)
@@ -230,31 +228,6 @@ export default class Space {
         return { composer, renderPass, outlinePass, shaderPass, outputPass }
     }
 
-    private createLineAroundSphere({ vectors, sphericals }: { vectors?: { start: THREE.Vector3, end: THREE.Vector3 }, sphericals?: { start: THREE.Spherical, end: THREE.Spherical } }) {
-        // @ToDo: add error
-        const start = sphericals?.start ?? new THREE.Spherical().setFromVector3(vectors?.start!)
-        const end = sphericals?.end ?? new THREE.Spherical().setFromVector3(vectors?.end!)
-
-        const curvePoints = [];
-        const numPoints = 100;
-        for (let i = 0; i < numPoints; i++) {
-            const t = i / (numPoints - 1);
-            const phi = start.phi * (1 - t) + end.phi * t;
-            const theta = start.theta * (1 - t) + end.theta * t;
-            curvePoints.push(new THREE.Vector3().setFromSphericalCoords(50, phi, theta));
-        }
-
-        const curve = new THREE.CatmullRomCurve3(curvePoints)
-        const points = curve.getPoints(numPoints)
-
-        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
-        const line = new THREE.Line(lineGeometry, lineMaterial)
-        line.name = 'line'
-
-        return { line }
-    }
-
     private listeners() {
         const { meAnchor } = this
 
@@ -270,8 +243,8 @@ export default class Space {
             this.renderer.setSize(this.width, this.height)
         })
         window.addEventListener('mousemove', e => {
-            this.mouseX = e.clientX - this.width / 2
-            this.mouseY = e.clientY - this.height / 2
+            this.envpointer.x = e.clientX - this.width / 2
+            this.envpointer.y = e.clientY - this.height / 2
 
             this.pointer.x = (e.clientX / this.width) * 2 - 1;
             this.pointer.y = -(e.clientY / this.height) * 2 + 1;
@@ -305,9 +278,11 @@ export default class Space {
 
                     // this.states.clicked.pillar
 
-                    const { line } = this.createLineAroundSphere({ vectors: { start, end }})
+                    const { error, line } = createLineAroundSphere({ r: 50, vectors: { start, end }})
 
-                    this.scene.add(line)
+                    if(!error && line) {
+                        this.scene.add(line)
+                    }
                 }
                 this.states.clicked.pillar = this.intersected
             }
@@ -315,7 +290,7 @@ export default class Space {
     }
 
     private render() {
-        const { hoverMeAnchor, plane, mouseX, mouseY, camera, pointer, raycaster, scene, light } = this
+        const { hoverMeAnchor, plane, camera, pointer, raycaster, scene, light } = this
         if (hoverMeAnchor || this.states.clicked.moon) {
             if (camera.position.z > 100)
                 this.camera.position.z -= .5;
@@ -324,8 +299,8 @@ export default class Space {
         } else {
             if (camera.position.z < plane.far / 4)
                 this.camera.position.z += .5
-            this.camera.position.x += (mouseX - camera.position.x) * .005
-            this.camera.position.y += (mouseY - camera.position.y) * .005
+            this.camera.position.x += (this.envpointer.x - camera.position.x) * .005
+            this.camera.position.y += (this.envpointer.y - camera.position.y) * .005
         }
 
         // @ToDo: seperate raycasting
@@ -354,11 +329,14 @@ export default class Space {
             const start = this.states.clicked.pillar.position
             const end = intersects[0].point
 
-            const { line } = this.createLineAroundSphere({ vectors: { start, end }})
+            const { error, line } = createLineAroundSphere({ r: 50, vectors: { start, end }})
 
-            this.scene.add(line)
+            if(!error && line) {
+                this.scene.add(line)
 
-            this.states.line = line
+                this.states.line = line
+            }
+
         }
         // @end
 
