@@ -32,7 +32,7 @@ export default class Space {
     private scene: THREE.Scene
     private renderer: THREE.WebGLRenderer
     private camera: THREE.Camera
-    private light: THREE.DirectionalLight
+    private light: THREE.PointLight
     private textureLoader: THREE.TextureLoader
     private loadingManager: THREE.LoadingManager
     private raycaster: THREE.Raycaster
@@ -80,8 +80,14 @@ export default class Space {
         this.camera = new THREE.PerspectiveCamera(this.fieldOfView, this.width / this.height, this.plane.near, this.plane.far)
         this.camera.position.z = this.plane.far / 4
 
-        this.light = new THREE.DirectionalLight(0xffffff, 0.5);
-        this.light.position.z = 50
+        const sphere = new THREE.SphereGeometry( 0.5, 16, 8 );
+
+        this.light = new THREE.PointLight(0xffffff, 2000);
+        // const mesh = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xffffff }))
+        // this.light.add(mesh)
+        this.light.position.z = this.plane.far / 10
+
+        
         this.scene.add(this.light)
 
         this.loadingManager = new THREE.LoadingManager(this.loadCallback)
@@ -92,8 +98,6 @@ export default class Space {
 
         const { mesh: moon } = this.createMoon()
         this.moon = moon
-
-        this.light.target = moon
 
         this.createStars({})
 
@@ -155,9 +159,9 @@ export default class Space {
             { phi: PI * .65, theta: 0 },
         ].map(({ phi, theta })=> {
             const geometryP = new THREE.CylinderGeometry(pillarSize, pillarSize, pillarSize, 32, 32);
-            const materialP = new THREE.MeshBasicMaterial({
+            const materialP = new THREE.MeshStandardMaterial({
                 // color: "red"
-                color: "#e3e0cd", 
+                color: "white", 
                 // wireframe: true
             });
             const meshP = new THREE.Mesh(geometryP, materialP);
@@ -181,7 +185,7 @@ export default class Space {
         const geometry = new THREE.SphereGeometry(1000, 100, 50)
 
         const materialOptions = {
-            size: 2.0,
+            size: 1.0,
             opacity: .7
         }
 
@@ -269,8 +273,8 @@ export default class Space {
             this.mouseX = e.clientX - this.width / 2
             this.mouseY = e.clientY - this.height / 2
 
-            this.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-            this.pointer.y = - (e.clientY / window.innerHeight) * 2 + 1;
+            this.pointer.x = (e.clientX / this.width) * 2 - 1;
+            this.pointer.y = -(e.clientY / this.height) * 2 + 1;
         })
         meAnchor.addEventListener('mouseenter', e => {
             this.hoverMeAnchor = true
@@ -298,6 +302,8 @@ export default class Space {
                 if(this.states.clicked.pillar) {
                     const start = this.states.clicked.pillar.position
                     const end = this.intersected.position
+
+                    // this.states.clicked.pillar
 
                     const { line } = this.createLineAroundSphere({ vectors: { start, end }})
 
@@ -356,9 +362,8 @@ export default class Space {
         }
         // @end
 
-        // @ToDo: better light control
-        this.light.position.x += (mouseX - light.position.x) * .001
-        this.light.position.y += (mouseY - light.position.y) * .001
+        this.light.position.x += (this.pointer.x * (this.plane.far / 10) - light.position.x) * .1
+        this.light.position.y += (this.pointer.y * (this.plane.far / 10) - light.position.y) * .1
 
         this.camera.lookAt(this.moon.position)
         this.composer.render()

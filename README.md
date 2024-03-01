@@ -6,7 +6,9 @@
 - add animation for dial
 - cleanup eventlisteners
 - add reactjs?
-- setup better light control for space scene
 - add aboutme
 - add projects
+- mobile improvements
+    - make name link double click so animation shows
+    - make moon interactable
 - add sound effects
