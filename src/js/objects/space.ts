@@ -58,6 +58,8 @@ export default class Space {
     private meAnchor: HTMLAnchorElement
     private hoverMeAnchor: boolean = false
 
+    private pillars: THREE.Mesh[]
+
     // States
     private activePillars: State
 
@@ -72,7 +74,13 @@ export default class Space {
 
         this.activePillars = new State({ 
             value: [], 
-            setter: ({ oldValue, value })=> [value, ...oldValue] 
+            setter: ({ oldValue, value })=> {
+                const newValue = [value, ...oldValue]
+
+                this.onPillarChange(newValue)
+
+                return newValue
+            }
         })
 
         this.scene = new THREE.Scene()
@@ -102,8 +110,9 @@ export default class Space {
 
         this.raycaster = new THREE.Raycaster
 
-        const { mesh: moon } = this.createMoon()
+        const { mesh: moon, pillars } = this.createMoon()
         this.moon = moon
+        this.pillars = pillars
 
         this.createStars({})
 
@@ -288,6 +297,31 @@ export default class Space {
             }
 
         })
+    }
+
+    private onPillarChange(currentPillars: THREE.Mesh[]) {
+        const codes = [
+            this.pillars.map((pillar, index)=> [0,1,2,3,6].includes(index) ? pillar.id : '').join('')
+        ]
+
+        const code = currentPillars.map(pillar=> pillar.id).sort().join('')
+
+        const exists = codes.includes(code)
+
+        if(exists) {
+            currentPillars.forEach(pillar=> {
+                const geometry = new THREE.BufferGeometry().setFromPoints([pillar.position, new THREE.Vector3(0,0,80)])
+    
+                const material = new THREE.LineBasicMaterial({
+                    color: 0x0000ff
+                })
+    
+                const line = new THREE.Line( geometry, material )
+    
+                this.scene.add(line)
+            })
+            console.log(exists)
+        }
     }
 
     private render() {
