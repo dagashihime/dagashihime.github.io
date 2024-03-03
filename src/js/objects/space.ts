@@ -5,8 +5,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { getRandomXYZ } from '../helpers/math';
-import { createLineAroundSphere } from '../helpers/three';
+import { createLineAroundSphere, getRandomVector3 } from '../helpers/three';
+import State from './state';
 
 interface Plane {
     near: number
@@ -44,19 +44,22 @@ export default class Space {
     private states: {
         clicked: {
             moon: boolean
-            pillar?: THREE.Mesh 
+            pillar: THREE.Mesh[]
         }
         line?: THREE.Line
     } = {
         clicked: {
             moon: false,
-            pillar: undefined
+            pillar: []
         },
         line: undefined
     }
 
     private meAnchor: HTMLAnchorElement
     private hoverMeAnchor: boolean = false
+
+    // States
+    private activePillars: State
 
     constructor({ canvas, fieldOfView = 75, plane = { near: 1, far: 1250 } }: SpaceInput) {
         this.canvas = canvas
@@ -66,6 +69,11 @@ export default class Space {
         this.plane = plane
         this.pointer = new THREE.Vector2(0, 0)
         this.envpointer = new THREE.Vector2(0, 0)
+
+        this.activePillars = new State({ 
+            value: [], 
+            setter: ({ oldValue, value })=> [value, ...oldValue] 
+        })
 
         this.scene = new THREE.Scene()
         this.scene.fog = new THREE.FogExp2(0x000000, .0003)
@@ -182,22 +190,14 @@ export default class Space {
 
         const geometry = new THREE.SphereGeometry(1000, 100, 50)
 
-        const materialOptions = {
-            size: 1.0,
+        const material = new THREE.PointsMaterial({
+            size: 1,
             opacity: .7
-        }
-
-        const material = new THREE.PointsMaterial(materialOptions)
+        })
 
         let vertices = []
         for (let i = 0; i < starQuantity; i++) {
-            let starVertex = new THREE.Vector3()
-            const { x, y, z } = getRandomXYZ({ exclusionRange: 500 })
-            starVertex.x = x
-            starVertex.y = y
-            starVertex.z = z
-
-            vertices.push(starVertex)
+            vertices.push(getRandomVector3({ exclusionRange: 500 }))
         }
 
         geometry.setFromPoints(vertices)
@@ -268,15 +268,14 @@ export default class Space {
                 if(this.states.line) {
                     this.scene.remove(this.states.line)
                     this.states.line = undefined
-                    this.states.clicked.pillar = undefined
                 }
             }
             if(this.intersected && this.intersected.name === 'pillar') {
-                if(this.states.clicked.pillar) {
-                    const start = this.states.clicked.pillar.position
-                    const end = this.intersected.position
+                const oldActivePillars = this.activePillars.get()
 
-                    // this.states.clicked.pillar
+                if(oldActivePillars.length > 0) {
+                    const start = oldActivePillars[0].position
+                    const end = this.intersected.position
 
                     const { error, line } = createLineAroundSphere({ r: 50, vectors: { start, end }})
 
@@ -284,8 +283,10 @@ export default class Space {
                         this.scene.add(line)
                     }
                 }
-                this.states.clicked.pillar = this.intersected
+
+                this.activePillars.set(this.intersected)
             }
+
         })
     }
 
@@ -321,12 +322,14 @@ export default class Space {
             document.body.style.cursor = 'default';
         }
 
-        if(this.intersected && this.intersected.name === 'moon' && this.states.clicked.pillar) {
+        const oldActivePillars = this.activePillars.get()
+
+        if(this.intersected && this.intersected.name === 'moon' && oldActivePillars.length > 0 && this.states.clicked.moon) {
             if(this.states.line) {
                 this.scene.remove(this.states.line)
             }
 
-            const start = this.states.clicked.pillar.position
+            const start = oldActivePillars[0].position
             const end = intersects[0].point
 
             const { error, line } = createLineAroundSphere({ r: 50, vectors: { start, end }})

@@ -62,6 +62,20 @@ const createLineAroundSphere = ({ r, numPoints = 100, vectors, sphericals }: Cre
     return { line }
 }
 
+const getRandomVector3 = ({ exclusionRange }: { exclusionRange?: number })=> {
+    let array;
+    do {
+        array = ['x','y','z'].map(()=> {
+            return Math.random() * 2000 - 1000
+        })
+    } while(exclusionRange && array.filter(n=> n >= -exclusionRange && n <= exclusionRange).length === 3)
+    
+    
+
+    return new THREE.Vector3(array[0], array[1] ,array[2])
+}
+
 export {
-    createLineAroundSphere
+    createLineAroundSphere,
+    getRandomVector3
 }
