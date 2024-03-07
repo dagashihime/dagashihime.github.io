@@ -7,11 +7,7 @@ import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createLineAroundSphere, getRandomVector3 } from '../helpers/three';
 import State from './state';
-
-interface Plane {
-    near: number
-    far: number
-}
+import SceneBase, { type Plane } from './scenebase';
 
 interface SpaceInput {
     canvas: HTMLCanvasElement
@@ -19,18 +15,9 @@ interface SpaceInput {
     plane?: Plane
 }
 
-export default class Space {
-    private canvas: HTMLCanvasElement
-    private width: number
-    private height: number
-    private fieldOfView: number
-    private plane: Plane
-    private pointer: THREE.Vector2
+export default class Space extends SceneBase {
     private envpointer: THREE.Vector2
 
-    private scene: THREE.Scene
-    private renderer: THREE.WebGLRenderer
-    private camera: THREE.Camera
     private light: THREE.PointLight
     private textureLoader: THREE.TextureLoader
     private loadingManager: THREE.LoadingManager
@@ -64,12 +51,8 @@ export default class Space {
     private activePillars: State
 
     constructor({ canvas, fieldOfView = 75, plane = { near: 1, far: 1250 } }: SpaceInput) {
-        this.canvas = canvas
-        this.width = this.canvas.width
-        this.height = this.canvas.height
-        this.fieldOfView = fieldOfView
-        this.plane = plane
-        this.pointer = new THREE.Vector2(0, 0)
+        super({ canvas, fieldOfView, plane })
+
         this.envpointer = new THREE.Vector2(0, 0)
 
         this.activePillars = new State({ 
@@ -83,25 +66,12 @@ export default class Space {
             }
         })
 
-        this.scene = new THREE.Scene()
         this.scene.fog = new THREE.FogExp2(0x000000, .0003)
 
-        this.renderer = new THREE.WebGLRenderer({ alpha: true, canvas })
-        this.renderer.setClearColor(0x000000, 1)
-        this.renderer.setPixelRatio(window.devicePixelRatio)
-        this.renderer.setSize(this.width, this.height)
-
-        this.camera = new THREE.PerspectiveCamera(this.fieldOfView, this.width / this.height, this.plane.near, this.plane.far)
         this.camera.position.z = this.plane.far / 4
 
-        const sphere = new THREE.SphereGeometry( 0.5, 16, 8 );
-
         this.light = new THREE.PointLight(0xffffff, 2000);
-        // const mesh = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ color: 0xffffff }))
-        // this.light.add(mesh)
         this.light.position.z = this.plane.far / 10
-
-        
         this.scene.add(this.light)
 
         this.loadingManager = new THREE.LoadingManager(this.loadCallback)
@@ -237,26 +207,14 @@ export default class Space {
         return { composer, renderPass, outlinePass, shaderPass, outputPass }
     }
 
-    private listeners() {
+    protected listeners() {
+        super.listeners()
+
         const { meAnchor } = this
 
-        window.addEventListener('resize', () => {
-            this.width = window.innerWidth
-            this.height = window.innerHeight
-
-            // @ts-ignore
-            this.camera.aspect = this.width / this.height
-            // @ts-ignore
-            this.camera.updateProjectionMatrix()
-
-            this.renderer.setSize(this.width, this.height)
-        })
         window.addEventListener('mousemove', e => {
             this.envpointer.x = e.clientX - this.width / 2
             this.envpointer.y = e.clientY - this.height / 2
-
-            this.pointer.x = (e.clientX / this.width) * 2 - 1;
-            this.pointer.y = -(e.clientY / this.height) * 2 + 1;
         })
         meAnchor.addEventListener('mouseenter', e => {
             this.hoverMeAnchor = true
@@ -316,15 +274,17 @@ export default class Space {
                     color: 0x0000ff
                 })
     
-                const line = new THREE.Line( geometry, material )
+                const line = new THREE.Line(geometry, material)
+                line.name = 'line'
     
                 this.scene.add(line)
             })
-            console.log(exists)
         }
     }
 
-    private render() {
+    public render() {
+        super.render()
+
         const { hoverMeAnchor, plane, camera, pointer, raycaster, scene, light } = this
         if (hoverMeAnchor || this.states.clicked.moon) {
             if (camera.position.z > 100)
@@ -373,7 +333,6 @@ export default class Space {
 
                 this.states.line = line
             }
-
         }
         // @end
 
@@ -382,10 +341,5 @@ export default class Space {
 
         this.camera.lookAt(this.moon.position)
         this.composer.render()
-    }
-
-    public animate() {
-        requestAnimationFrame(this.animate.bind(this))
-        this.render()
     }
 }

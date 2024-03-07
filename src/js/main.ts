@@ -4,9 +4,10 @@ const canvas = document.createElement('canvas') as HTMLCanvasElement
 canvas.id = '???'
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
+canvas.style.position = 'fixed'
 
 const space = new Space({ canvas })
-space.animate()
+space.render()
 
 document.body.appendChild(canvas)
 
